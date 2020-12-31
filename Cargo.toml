@@ -1,8 +1,9 @@
 [package]
 name = "antidote-rust-client"
-version = "0.1.0"
+version = "0.2.2"
 authors = ["Yannick Wagner <y.w94@gmx.de>"]
 edition = "2018"
+description = "A rust client library for the database antidote written by a rust beginner."
 repository = "https://github.com/Yannick-W/antidote-rust-client"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
