@@ -5,9 +5,9 @@ use std::sync::{Arc};
 use std::thread;
 use std::time::{Instant};
 
-use arc::{Client, Host, new_client};
-use arc::antidote_pb::{CRDT_type};
-use arc::transactions::{MapEntryKey, InteractiveTransaction, 
+use antidote_rust_client::{Client, Host, new_client};
+use antidote_rust_client::antidote_pb::{CRDT_type};
+use antidote_rust_client::transactions::{MapEntryKey, InteractiveTransaction, 
     Bucket, Key, CRDTUpdater, CRDTReader, MapReadResultExtractor, 
     counter_inc, set_add, set_remove, reg_put, map_update
 };
