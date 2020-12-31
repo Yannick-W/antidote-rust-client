@@ -6,7 +6,11 @@ use std::thread;
 use std::time::{Instant};
 
 use arc::{Client, Host, new_client};
-use arc::transactions::{InteractiveTransaction, Bucket, Key, CRDTUpdater, counter_inc, CRDTReader, MapReadResultExtractor, set_add, set_remove, reg_put, map_update};
+use arc::antidote_pb::{CRDT_type};
+use arc::transactions::{MapEntryKey, InteractiveTransaction, 
+    Bucket, Key, CRDTUpdater, CRDTReader, MapReadResultExtractor, 
+    counter_inc, set_add, set_remove, reg_put, map_update
+};
 
 
 /// private setup function: creates a new client to Host{127.0.0.1:8101} and a bucket
@@ -313,5 +317,54 @@ fn test_many_updates_seq_in_trans() -> Result<(), Error> {
     assert_eq!(30000, counter_val);
     println!("Counter value as expected: {}", counter_val);
     println!("Test duration: {}", now.elapsed().as_millis());
+    Ok(())
+}
+
+#[test]
+fn test_map_list_map_keys() -> Result<(), Error> {
+    // setup: create client and connection, start interactive transaction
+    let (client, bucket) = setup_interactive()?;
+
+    let keyname = String::from("keyMap");
+    let key = Key(keyname.as_bytes().to_vec());
+
+    let mut tx = client.start_transaction()?;
+
+    let key_counter = "counter".as_bytes().to_vec();
+    let key_reg = "reg".as_bytes().to_vec();
+    let key_set = "set".as_bytes().to_vec();
+    bucket.update(&mut tx, vec!(
+        map_update(&key, vec!(
+            counter_inc(&Key(key_counter.clone()), 13),
+            reg_put(&Key(key_reg.clone()), "Hello World".as_bytes().to_vec()),
+            set_add(&Key(key_set.clone()), vec!("A".as_bytes().to_vec(), "B".as_bytes().to_vec())
+        )))
+    ))?;
+
+    let map_v = bucket.read_map(&mut tx, &key)?;
+    let key_list = map_v.list_map_keys();
+
+    // commit
+    tx.commit()?;
+
+    // asserts
+    let expected_map_entries = vec!(
+        MapEntryKey{key:key_counter.clone(), crdt_type: CRDT_type::COUNTER},
+        MapEntryKey{key:key_reg.clone(), crdt_type: CRDT_type::LWWREG},
+        MapEntryKey{key:key_set.clone(), crdt_type: CRDT_type::ORSET},
+    );
+
+    let mut found = false;
+    for expected in expected_map_entries.iter() {
+        for entry in key_list.iter() {
+            if entry.key == expected.key && entry.crdt_type == expected.crdt_type {
+                found = true;
+                break
+            }
+        }
+        if !found {
+            return Err(Error::new(ErrorKind::Other, format!("expected value {:?} not found in result ({:?})", expected, key_list)))
+        }
+    }
     Ok(())
 }

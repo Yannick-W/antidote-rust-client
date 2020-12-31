@@ -12,9 +12,9 @@ use std::io::{Error, ErrorKind};
 
 // inline code from other modules
 pub mod transactions;
+pub mod antidote_pb; // generated pb file
 mod r2d2_adapter;
 mod coder;
-mod antidote_pb; // generated pb file
 
 // better access to transactions
 use transactions::{InteractiveTransaction, StaticTransaction};

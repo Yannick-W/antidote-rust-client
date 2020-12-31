@@ -1,9 +1,9 @@
-
 use crate::antidote_pb::*;
 use crate::coder;
+use super::{Client, AntidoteConnectionManager};
+
 use std::fmt;
 use protobuf::{RepeatedField};
-use super::{Client, AntidoteConnectionManager};
 use std::io::{Error, ErrorKind};
 
 
@@ -308,6 +308,11 @@ impl MapReadResultExtractor for MapReadResult {
 pub struct MapEntryKey {
     pub key: Vec<u8>,
     pub crdt_type: CRDT_type,
+}
+impl fmt::Debug for MapEntryKey {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        writeln!(f, "MapEntryKey ({:?}, {:?})", self.key, self.crdt_type)
+    }
 }
 
 /// Represents updates that can be converted to top-level updates applicable to a bucket
